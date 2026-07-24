@@ -1,26 +1,28 @@
-export default function middleware(request) {
-  const url = new URL(request.url);
+import { NextResponse } from 'next/server';
 
-  // 1. السماح المباشر لصفحة الكابتشا والـ API والملفات الأساسية
+export function middleware(request) {
+  const url = request.nextUrl.clone();
+
+  // 1. استثناء طلبات الكابتشا والـ API والملفات الثابتة
   if (
     url.pathname === '/captcha.html' || 
     url.pathname.startsWith('/api/') ||
-    url.pathname.endsWith('.ico') ||
-    url.pathname.endsWith('.css') ||
-    url.pathname.endsWith('.js')
+    url.pathname.includes('.')
   ) {
-    return;
+    return NextResponse.next();
   }
 
-  // 2. التحقق من وجود الكوكي
+  // 2. فحص وجود كوكي التحقق
   const cookieHeader = request.headers.get('cookie') || '';
   const isVerified = cookieHeader.includes('cf_clearance=verified');
 
-  // 3. إذا كان المقتحم غير موثق ولم يكن بالأسصل في صفحة الكابتشا، حوّله إليها
+  // 3. إذا لم يكتمل التحقق، اعرض صفحة الكابتشا من داخل public
   if (!isVerified) {
     url.pathname = '/captcha.html';
-    return Response.redirect(url, 307);
+    return NextResponse.rewrite(url);
   }
+
+  return NextResponse.next();
 }
 
 export const config = {
