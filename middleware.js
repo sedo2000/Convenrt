@@ -1,19 +1,25 @@
 export default function middleware(request) {
   const url = new URL(request.url);
 
-  // السماح بصفحة الكابتشا وطلب التحقق بـ API دون حظر
-  if (url.pathname === '/captcha.html' || url.pathname === '/api/verify') {
+  // 1. السماح المباشر لصفحة الكابتشا والـ API والملفات الأساسية
+  if (
+    url.pathname === '/captcha.html' || 
+    url.pathname.startsWith('/api/') ||
+    url.pathname.endsWith('.ico') ||
+    url.pathname.endsWith('.css') ||
+    url.pathname.endsWith('.js')
+  ) {
     return;
   }
 
-  // قراءة الكوكي التأكيدي
+  // 2. التحقق من وجود الكوكي
   const cookieHeader = request.headers.get('cookie') || '';
   const isVerified = cookieHeader.includes('cf_clearance=verified');
 
-  // إذا لم يمر من الكابتشا، حوّله لصفحة التحقق فوراً
+  // 3. إذا كان المقتحم غير موثق ولم يكن بالأسصل في صفحة الكابتشا، حوّله إليها
   if (!isVerified) {
     url.pathname = '/captcha.html';
-    return Response.redirect(url.toString(), 307);
+    return Response.redirect(url, 307);
   }
 }
 
