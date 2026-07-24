@@ -2,33 +2,67 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>التحقق من الأمان</title>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
-    body { display: flex; justify-content: center; align-items: center; height: 100vh; background: #111; color: #fff; font-family: sans-serif; }
-    .box { text-align: center; background: #222; padding: 2rem; border-radius: 12px; border: 2px solid #333; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #0d0f12;
+      color: #f3f4f6;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .box {
+      text-align: center;
+      background: #181b20;
+      padding: 2.5rem 2rem;
+      border-radius: 16px;
+      border: 1px solid #2d3139;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      max-width: 400px;
+      width: 90%;
+    }
+    h2 { font-size: 1.4rem; margin-bottom: 0.75rem; color: #fff; }
+    p { font-size: 0.95rem; color: #9ca3af; margin-bottom: 1.5rem; line-height: 1.5; }
+    .captcha-container { display: flex; justify-content: center; margin-top: 1rem; }
   </style>
 </head>
 <body>
+
   <div class="box">
-    <h2>يرجى تأكيد أنك لست روبوت</h2>
-    <p>للوصول إلى محتوى الموقع، يرجى إكمال التحقق التالي:</p>
-    <!-- استبدل data-sitekey بمفتاحك المخصص -->
-    <div class="cf-turnstile" data-sitekey="0x4AAAAAAD8_Py3ETE5GS" data-callback="onTurnstileSuccess"></div>
+    <h2>تأكيد الأمان</h2>
+    <p>يرجى إكمال اختبار التحقق أدناه للوصول إلى محتوى الموقع.</p>
+    
+    <div class="captcha-container">
+      <div class="cf-turnstile" data-sitekey="0x4AAAAAAD8_Py3ETE5GS" data-callback="onTurnstileSuccess"></div>
+    </div>
   </div>
 
   <script>
     async function onTurnstileSuccess(token) {
-      const res = await fetch('/api/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token })
-      });
-      const data = await res.json();
-      if (data.success) {
-        window.location.reload(); // إعادة التحميل للوصول إلى index.html الحقيقي
-      } else {
-        alert('فشل التحقق، يرجى المحاولة مجدداً');
+      try {
+        const res = await fetch('/api/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          // إعادة تحديث الصفحة للانتقال للموقع الرئيسي بعد زرع الكوكي
+          window.location.reload();
+        } else {
+          alert('فشل التحقق من أمان المتصفح، حاول مرة أخرى.');
+          if (window.turnstile) turnstile.reset();
+        }
+      } catch (err) {
+        alert('حدث خطأ أثناء الاتصال بالخادم.');
+        if (window.turnstile) turnstile.reset();
       }
     }
   </script>
