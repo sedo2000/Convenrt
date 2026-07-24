@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>التحقق من الأمان</title>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <style>
+    body { display: flex; justify-content: center; align-items: center; height: 100vh; background: #111; color: #fff; font-family: sans-serif; }
+    .box { text-align: center; background: #222; padding: 2rem; border-radius: 12px; border: 2px solid #333; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>يرجى تأكيد أنك لست روبوت</h2>
+    <p>للوصول إلى محتوى الموقع، يرجى إكمال التحقق التالي:</p>
+    <!-- استبدل data-sitekey بمفتاحك المخصص -->
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAAD8_Py3ETE5GS" data-callback="onTurnstileSuccess"></div>
+  </div>
+
+  <script>
+    async function onTurnstileSuccess(token) {
+      const res = await fetch('/api/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      const data = await res.json();
+      if (data.success) {
+        window.location.reload(); // إعادة التحميل للوصول إلى index.html الحقيقي
+      } else {
+        alert('فشل التحقق، يرجى المحاولة مجدداً');
+      }
+    }
+  </script>
+</body>
+</html>
