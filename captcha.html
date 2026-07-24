@@ -48,21 +48,20 @@
         const res = await fetch('/api/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token })
+          body: JSON.stringify({ token: token })
         });
 
         const data = await res.json();
 
         if (res.ok && data.success) {
-          // إعادة تحديث الصفحة للانتقال للموقع الرئيسي بعد زرع الكوكي
           window.location.reload();
         } else {
-          alert('فشل التحقق من أمان المتصفح، حاول مرة أخرى.');
-          if (window.turnstile) turnstile.reset();
+          alert('فشل التحقق، يرجى المحاولة مجدداً.');
+          if (window.turnstile) window.turnstile.reset();
         }
       } catch (err) {
         alert('حدث خطأ أثناء الاتصال بالخادم.');
-        if (window.turnstile) turnstile.reset();
+        if (window.turnstile) window.turnstile.reset();
       }
     }
   </script>
