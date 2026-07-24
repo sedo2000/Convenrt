@@ -1,24 +1,22 @@
-import { NextResponse } from 'next/server'; // أو استخدام Web Standard Response
+export default function middleware(request) {
+  const url = new URL(request.url);
 
-export function middleware(request) {
-  const url = request.nextUrl.clone();
-  const token = request.cookies.get('cf_clearance');
-
-  // الاستثناءات: السماح بصفحة الكابتشا وطلب التحقق
+  // السماح بصفحة الكابتشا وطلب التحقق بـ API
   if (url.pathname === '/captcha.html' || url.pathname === '/api/verify') {
-    return NextResponse.next();
+    return;
   }
 
-  // إذا لم يكن لديه الكوكي المناسب، حوّله فوراً لصفحة الكابتشا
-  if (!token || token.value !== 'verified') {
+  // قراءة الكوكي من الـ Headers مباشرة
+  const cookieHeader = request.headers.get('cookie') || '';
+  const isVerified = cookieHeader.includes('cf_clearance=verified');
+
+  // إذا لم يكن متحققاً، إعادة التوجيه لصفحة الكابتشا
+  if (!isVerified) {
     url.pathname = '/captcha.html';
-    return NextResponse.rewrite(url);
+    return Response.redirect(url.toString(), 307);
   }
-
-  return NextResponse.next();
 }
 
 export const config = {
-  // تطبيق Middleware على كل الصفحات باستثناء أصول الصور والـ Assets الفتية
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };
