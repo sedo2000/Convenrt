@@ -2,5 +2,12 @@
   "name": "convenrt",
   "version": "1.0.0",
   "type": "module",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "wrangler": "^4.114.0"
+  },
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
+  }
 }
