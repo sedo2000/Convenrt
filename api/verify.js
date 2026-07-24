@@ -9,7 +9,7 @@ module.exports = async function handler(req, res) {
     const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
     if (!secretKey) {
-      return res.status(500).json({ error: 'Secret Key is missing in Vercel settings' });
+      return res.status(500).json({ error: 'Secret Key missing' });
     }
 
     const formData = new URLSearchParams();
@@ -24,12 +24,16 @@ module.exports = async function handler(req, res) {
     const outcome = await verifyRes.json();
 
     if (outcome.success) {
-      res.setHeader('Set-Cookie', 'cf_clearance=verified; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400');
+      // إعداد الكوكي بشكل صريح يدعم Vercel و HTTPS
+      res.setHeader(
+        'Set-Cookie',
+        'cf_clearance=verified; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400'
+      );
       return res.status(200).json({ success: true });
     } else {
-      return res.status(400).json({ success: false, error: 'Captcha validation failed' });
+      return res.status(400).json({ success: false, error: 'Turnstile failed' });
     }
   } catch (err) {
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Server error' });
   }
 };
