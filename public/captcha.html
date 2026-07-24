@@ -54,7 +54,10 @@
         const data = await res.json();
 
         if (res.ok && data.success) {
-          window.location.reload();
+          // الانتظار لحظة لضمان استقرار الكوكي ثم التوجيه للموقع الرئيسي
+          setTimeout(() => {
+            window.location.replace('/');
+          }, 300);
         } else {
           alert('فشل التحقق، يرجى المحاولة مجدداً.');
           if (window.turnstile) window.turnstile.reset();
